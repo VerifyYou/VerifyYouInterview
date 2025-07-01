@@ -5,6 +5,7 @@ import hashlib
 
 post_url = 'http://localhost:8080/v1/user/create'
 data = {
+  'name': 'Sally Test',
   'phone_number': '+15128675309',
   'password': 'some_password_123',
 }

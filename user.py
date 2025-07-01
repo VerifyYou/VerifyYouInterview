@@ -22,7 +22,7 @@ user_app = Blueprint('user_app', __name__)
 
 # Returns (user, is_new)
 @ndb.transactional()
-def _create_user(user_id, phone_number, encrypted_password, user_type):
+def _create_user(user_id, name, phone_number, encrypted_password, user_type):
     # Check for any pre-existing accounts that collide with this one
     if user_type == UserType.INDIVIDUAL:
         users = User.query(
@@ -36,6 +36,7 @@ def _create_user(user_id, phone_number, encrypted_password, user_type):
     key = ndb.Key(User, user_id)
     entity = User(
         key=key,
+        name=name,
         phone_number=phone_number,
         encrypted_password=encrypted_password,
         update_timestamp_s=int(time.time()),
@@ -171,8 +172,19 @@ def is_password_sufficiently_strong(password):
 def user_create(my_code_id):
     # Parse json
     content = request.get_json()
+    name = content.get('name')
     phone_number = content.get('phone_number')
     password = content.get('password')
+
+    # Input verification
+
+    if name is None:
+        return returnFailure(FailureCode.INVALID_API_ACCESS, 'name must be supplied')
+    if len(name) > 64:
+        return returnFailure(FailureCode.INVALID_API_ACCESS, 'name is too long')
+    if len(name) < 2:
+        return returnFailure(FailureCode.INVALID_API_ACCESS, 'name is too short')
+    # TODO: More input checking on name
 
     if password is None:
         return returnFailure(FailureCode.INVALID_API_ACCESS, 'password must be supplied')
@@ -207,6 +219,7 @@ def user_create(my_code_id):
     with client.context():
         _create_user(
             user_id,
+            name,
             normalized_phone_number,
             encrypted_password,
             user_type

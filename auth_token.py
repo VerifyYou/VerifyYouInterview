@@ -55,10 +55,6 @@ def _get_auth_token(content):
     if len(parts) == 2 and parts[0].lower() == "bearer":
       auth_token = parts[1]
 
-  # If not from the headers, try to get it from the body
-  if not auth_header and content is not None:
-    auth_token = content.get('auth_token')
-
   return auth_token
 
 def ensure_user_authenticated(func): 
@@ -78,7 +74,7 @@ def ensure_user_authenticated(func):
       print("auth_token expired")
       return jsonify({"status": "failure", "failure_code": "NOT_LOGGED_IN", "failure_reason": "auth_token expired"})
     except InvalidAuthException as e:
-      print("auth_token invalid %s | %s" % (auth_token, e))
+      print("auth_token invalid %s" % (e))
       return jsonify({"status": "failure", "failure_code": "NOT_LOGGED_IN", "failure_reason": "auth_token invalid"})
 
     # calling the actual function now 
